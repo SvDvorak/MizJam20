@@ -244,7 +244,7 @@ GameObject:
   - component: {fileID: 464117162}
   - component: {fileID: 464117161}
   m_Layer: 0
-  m_Name: TreeGenerator
+  m_Name: Chunks
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -263,8 +263,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Prefab: {fileID: 3997832789449168701, guid: b3f5657b9fc73924fb92c6ef8a00410e, type: 3}
-  TreeCount: 10
-  Trees: []
 --- !u!4 &464117162
 Transform:
   m_ObjectHideFlags: 0
