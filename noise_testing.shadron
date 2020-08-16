@@ -1,0 +1,19 @@
+
+#include <perlin>
+
+float noice(vec2 pos, float offset) {
+    return perlinNoise(pos + vec2(offset));
+}
+
+float windNoise(vec2 pos) {
+    float val = 1;
+    float offset = val + sin(val * 0.25) * 0.5 + sin(val * 2) * 0.25 + sin(val * 4 + 0.6) * 0.12 + sin(val * 8) * 0.06; 
+    return noice(pos, offset) * 0.1 + noice(pos * 4, offset) * 0.12 + noice(pos * 8, offset) * 0.06;
+}
+
+vec4 noise(vec2 pos) {
+  float v = windNoise(pos);
+  return vec4(v, v, v, 1);
+}
+
+image noiseOut = glsl(noise, vec2(640, 400));
