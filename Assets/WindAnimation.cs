@@ -2,6 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public interface Animateable
+{
+	void Update();
+}
+
 public class WindAnimation : MonoBehaviour
 {
 	[Serializable]
@@ -31,7 +36,7 @@ public class WindAnimation : MonoBehaviour
 		}
 	}
 
-	public void UpdateAnimation()
+	public void Update()
 	{
 		var noise = NoiseFunctions.windNoise(transform.position / 100) * 10;
 		for (int i = 1; i < Bones.Count; i++)
