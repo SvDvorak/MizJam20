@@ -1,0 +1,29 @@
+{
+  "Story": [
+    {
+      "Distance": 1,
+      "Lines": [
+        "*:=!going on-:?.",
+        ".#><-ello?.<?",
+        "..=hello? Can you hear me?",
+        "I have no idea what's...",
+        "This screen is flashing loudly at me to tell you:",
+        "\"Keep moving and follow the train tracks\"",
+        "I don't know what that means."
+      ] 
+    },
+    {
+      "Distance": 20,
+      "Lines": [
+        
+      ] 
+    }
+  ],
+  "Interactions": [
+    {
+      "Name": "PLAYER_BODY",
+      "Lines": [
+      ]
+    }
+  ]
+}
