@@ -22,7 +22,7 @@
                     "interactions": ""
                 },
                 {
-                    "name": "Jump",
+                    "name": "Boost",
                     "type": "Button",
                     "id": "8e96e800-a6bd-40f9-8a09-40fc16466b15",
                     "expectedControlType": "Button",
@@ -192,7 +192,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "Jump",
+                    "action": "Boost",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -203,7 +203,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Jump",
+                    "action": "Boost",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
