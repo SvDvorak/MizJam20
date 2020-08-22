@@ -1,6 +1,7 @@
 ﻿using Assets;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.U2D;
 
 public class PlayerControls : MonoBehaviour
 {
@@ -63,7 +64,6 @@ public class PlayerControls : MonoBehaviour
 		{
 			StartMoveJump();
 		}
-
 
 		moveVelocity = (moveVelocity + moveActual * 0.05f) * 0.97f;
 
