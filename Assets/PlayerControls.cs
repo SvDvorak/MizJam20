@@ -26,6 +26,8 @@ public class PlayerControls : MonoBehaviour
 
 	private bool TimeToJumpAgain => autoRejumpTime < Time.time;
 
+	private float OxygenDeprivationMod => 0.65f + 0.35f * PlayerOxygen.NoOxygenToDeathUnitTime;
+
 	void Awake()
 	{
 		Player = gameObject;
@@ -44,14 +46,14 @@ public class PlayerControls : MonoBehaviour
 		var moveActual = Vector2.zero;
 		if (isMoveJumping)
 		{
-			moveActual = moveInput;
+			moveActual = moveInput * OxygenDeprivationMod;
 			if(distanceFromJumpStart < 0)
 			{
 				upVelocity = 0;
 				moveVelocity = Vector2.zero;
 				isMoveJumping = false;
 				Shadow.position = rb.position + shadowOffset;
-				autoRejumpTime = Time.time + RejumpDelay;
+				autoRejumpTime = Time.time + RejumpDelay / OxygenDeprivationMod;
 			}
 			else
 			{
@@ -67,9 +69,9 @@ public class PlayerControls : MonoBehaviour
 
 		moveVelocity = (moveVelocity + moveActual * 0.05f) * 0.97f;
 
-		startY += moveVelocity.y * MovementSpeed * Time.fixedDeltaTime;
-		rb.velocity = moveVelocity * MovementSpeed + new Vector2(0, upVelocity);
-		Shadow.velocity = moveVelocity * MovementSpeed;
+		startY += moveVelocity.y * MovementSpeed * OxygenDeprivationMod * Time.fixedDeltaTime;
+		rb.velocity = moveVelocity * MovementSpeed * OxygenDeprivationMod + new Vector2(0, upVelocity);
+		Shadow.velocity = moveVelocity * MovementSpeed * OxygenDeprivationMod;
 		Shadow.transform.localScale = shadowInitialScale * Mathf.Clamp(1 - distanceFromJumpStart * 0.5f, 0.5f, 1f);
 		var requestedJumpRotation = -moveVelocity.x * 15;
 
@@ -97,7 +99,7 @@ public class PlayerControls : MonoBehaviour
 
 	    isMoveJumping = true;
 	    startY = rb.position.y;
-	    upVelocity = 2f;
+	    upVelocity = 2f * OxygenDeprivationMod;
     }
 
     public void Interact(InputAction.CallbackContext context)

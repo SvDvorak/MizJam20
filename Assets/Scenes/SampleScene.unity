@@ -4068,8 +4068,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   OxygenBar: {fileID: 1725306986}
-  TimeUntilDeath: 10
-  TimeUntilOxygenDeplete: 5
+  TimeUntilDeath: 40
+  TimeUntilOxygenDeplete: 30
 --- !u!61 &1151800112
 BoxCollider2D:
   m_ObjectHideFlags: 0

@@ -22,8 +22,8 @@ public class PlayerOxygen : MonoBehaviour
 
     void Update()
     {
-        DeathUnitTimeLeft = (_death - Time.time) / TimeUntilDeath;
-        OxygenUnitTimeLeft = (_oxygenDeplete - Time.time) / TimeUntilOxygenDeplete;
+        DeathUnitTimeLeft = Mathf.Clamp01((_death - Time.time) / TimeUntilDeath);
+        OxygenUnitTimeLeft = Mathf.Clamp01((_oxygenDeplete - Time.time) / TimeUntilOxygenDeplete);
         NoOxygenToDeathUnitTime = Mathf.Clamp01((_death - Time.time) / (TimeUntilDeath - TimeUntilOxygenDeplete));
 
         OxygenBar.value = OxygenUnitTimeLeft;
