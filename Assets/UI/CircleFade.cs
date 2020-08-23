@@ -5,7 +5,6 @@ using UnityEngine.UI;
 //[ExecuteInEditMode]
 public class CircleFade : MonoBehaviour
 {
-	private float deathPauseMinSize = 0.1f;
 	private Material material;
 	private Camera gameCamera;
 
@@ -15,12 +14,17 @@ public class CircleFade : MonoBehaviour
 		gameCamera = Camera.main;
 	}
 
+	public void SetFade(float amount)
+	{
+		material.SetFloat("_CircleSize", amount);
+	}
+
 	public void Update()
 	{
-		material.SetFloat("_CircleSize", deathPauseMinSize + PlayerOxygen.NoOxygenToDeathUnitTime / (1 - deathPauseMinSize));
-		var playerPos = new Vector3();
-		if(PlayerControls.Player != null)
-			playerPos = PlayerControls.Player.transform.position;
+		if(!GameState.Ingame)
+			material.SetFloat("_CircleSize", 0);
+
+		var playerPos = PlayerControls.Player.transform.position;
 
 		var offset = gameCamera.WorldToScreenPoint(playerPos) - gameCamera.WorldToScreenPoint(gameCamera.transform.position);
 

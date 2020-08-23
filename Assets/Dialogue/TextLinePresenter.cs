@@ -11,6 +11,8 @@ namespace Assets
 	public abstract class TimedTask : MonoBehaviour
 	{
 		public abstract void StartTask();
+		public abstract void FinishNow();
+
 		public event Action OnFinish;
 
 		protected void Finish()
@@ -19,10 +21,17 @@ namespace Assets
 		}
 	}
 
+	public enum PrintPerWait
+	{
+		Letter,
+		Line
+	}
+
 	[RequireComponent(typeof(TMP_Text))]
 	public class TextLinePresenter : TimedTask
 	{
-		public float LettersPerSecond = 20;
+		public PrintPerWait PrintPerWait;
+		public float LinesOrLettersPerSecond = 20;
 		public float PausersTimeSeconds = 0.3f;
 		public float SpeedUpLettersPerSecond = 5;
 		public AudioSource WriteSound;
@@ -30,11 +39,13 @@ namespace Assets
 		private TMP_Text _textLine;
 
 		private readonly char[] _pausers = { '.', ',', '!', '?', ':', ';' };
+		private readonly char _hidePauser = '^';
 		private readonly char _speed = '>';
 		private readonly char _slow = '<';
 		private int _speedChange;
+		private Coroutine _task;
 
-		public void Start()
+		public void Awake()
 		{
 			_textLine = GetComponent<TMP_Text>();
 			SetText(_textLine.text);
@@ -56,7 +67,14 @@ namespace Assets
 
 		public override void StartTask()
 		{
-			StartCoroutine(AnimateText());
+			_task = StartCoroutine(AnimateText());
+		}
+
+		public override void FinishNow()
+		{
+			StopCoroutine(_task);
+			_textLine.maxVisibleCharacters = int.MaxValue;
+			Finish();
 		}
 
 		private IEnumerator AnimateText()
@@ -70,13 +88,22 @@ namespace Assets
 				if(speedChanged)
 					continue;
 
+				var hiddenPause = letter == _hidePauser;
+				if(hiddenPause)
+				{
+					_textLine.text = _textLine.text.Remove(letterIndex, 1);
+					yield return DialogueWait(1);
+					continue;
+				}
+
 				letterIndex += 1;
 				_textLine.maxVisibleCharacters = letterIndex;
 				PlaySound();
 				if(_pausers.Contains(letter))
 					yield return DialogueWait(PausersTimeSeconds);
 
-				yield return DialogueWait(1 / (LettersPerSecond + _speedChange * SpeedUpLettersPerSecond));
+				if(PrintPerWait == PrintPerWait.Letter || PrintPerWait == PrintPerWait.Line && letter == '\n')
+					yield return DialogueWait(1 / (LinesOrLettersPerSecond + _speedChange * SpeedUpLettersPerSecond));
 			}
 
 			yield return DialogueWait(1);

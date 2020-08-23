@@ -42,6 +42,9 @@ public class PlayerControls : MonoBehaviour
 
 	void FixedUpdate()
 	{
+		if (!GameState.Ingame)
+			return;
+
 		var distanceFromJumpStart = rb.position.y - startY;
 		var moveActual = Vector2.zero;
 		if (isMoveJumping)
