@@ -5,18 +5,20 @@ public class Timer : MonoBehaviour, ITimedTask
 {
 	private float startTime;
 	private float timerLengthInSeconds;
-	private float? pauseTimeLeft;
+	private float? pauseElapsedSoFar;
 	private bool isPlaying;
 
-	public Timer Init(float time, bool runDuringCutscene = true)
+	public Timer Init(float time)
 	{
 		timerLengthInSeconds = time;
-		startTime = Time.time + time;
+		startTime = Time.time;
 		isPlaying = true;
 		return this;
 	}
 
-	public float TimeLeft => Mathf.Clamp(Time.time - startTime, 0, timerLengthInSeconds);
+	public float Elapsed => Mathf.Clamp(Time.time - startTime, 0, timerLengthInSeconds);
+	public float UnitElapsed => Elapsed / timerLengthInSeconds;
+	public float TimeLeft => timerLengthInSeconds - Elapsed;
 	public float UnitTimeLeft => TimeLeft / timerLengthInSeconds;
 
 	public void Pause()
@@ -24,7 +26,7 @@ public class Timer : MonoBehaviour, ITimedTask
 		if (!IsPlaying())
 			return;
 
-		pauseTimeLeft = TimeLeft;
+		pauseElapsedSoFar = Elapsed;
 		isPlaying = false;
 	}
 
@@ -33,12 +35,20 @@ public class Timer : MonoBehaviour, ITimedTask
 		if (IsPlaying())
 			return;
 
-		if (pauseTimeLeft.HasValue)
-			startTime = Time.time + pauseTimeLeft.Value;
+		if (pauseElapsedSoFar.HasValue)
+			startTime = Time.time - pauseElapsedSoFar.Value;
 		else
-			startTime = Time.time + timerLengthInSeconds;
+			startTime = Time.time;
 
 		isPlaying = true;
+	}
+
+	public void Update()
+	{
+		if(GameState.InCutscene)
+			Pause();
+		else
+			Start();
 	}
 
 	public bool IsPlaying()

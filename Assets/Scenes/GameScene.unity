@@ -1992,6 +1992,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   GameOverText: {fileID: 1047608508}
+  Fade: {fileID: 1918404238}
 --- !u!222 &388773724
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4006,7 +4007,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DebugRunningCutscenes: 0
-  SkipIntro: 1
+  SkipIntro: 0
 --- !u!4 &948782549
 Transform:
   m_ObjectHideFlags: 0

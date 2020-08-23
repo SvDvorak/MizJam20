@@ -9,41 +9,44 @@ public class PlayerOxygen : MonoBehaviour
 	public float TimeUntilDeath;
 	public float TimeUntilOxygenDeplete;
 
-	public static float DeathUnitTimeLeft;
-	public static float OxygenUnitTimeLeft;
-	public static float NoOxygenToDeathUnitTime;
+	public static float DeathUnitTimeLeft = 1;
+	public static float OxygenUnitTimeLeft = 1;
+	public static float NoOxygenToDeathUnitTime = 1;
 
-	private float death;
-	private float oxygenDeplete;
 	private float deathFadeSize = 0.1f;
-	private float fadeAmount;
+	private Timer deathTimer;
+	private Timer oxygenDepleteTimer;
 
-	void Start()
-    {
-	    death = Time.time + TimeUntilDeath;
-	    oxygenDeplete = Time.time + TimeUntilOxygenDeplete;
-    }
+	public void Start()
+	{
+		deathTimer = gameObject.AddComponent<Timer>().Init(TimeUntilDeath);
+	    oxygenDepleteTimer = gameObject.AddComponent<Timer>().Init(TimeUntilOxygenDeplete);
+	}
 
-    void Update()
+    public void Update()
     {
 	    if (GameState.InCutscene || GameState.GameOver)
 		    return;
 
-        DeathUnitTimeLeft = Mathf.Clamp01((death - Time.time) / TimeUntilDeath);
-        OxygenUnitTimeLeft = Mathf.Clamp01((oxygenDeplete - Time.time) / TimeUntilOxygenDeplete);
-        NoOxygenToDeathUnitTime = Mathf.Clamp01((death - Time.time) / (TimeUntilDeath - TimeUntilOxygenDeplete));
-
-        OxygenBar.value = OxygenUnitTimeLeft;
-
-		if(NoOxygenToDeathUnitTime < 0.01)
+		if(deathTimer.IsPlaying())
 		{
-			GameState.GameOver = true;
+			DeathUnitTimeLeft = deathTimer.UnitTimeLeft;
+			NoOxygenToDeathUnitTime = Mathf.Clamp01(deathTimer.TimeLeft / (TimeUntilDeath - TimeUntilOxygenDeplete));
+			
+			if (NoOxygenToDeathUnitTime < 0.01)
+			{
+				GameState.GameOver = true;
+			}
+			else
+			{
+				var fadeAmount = deathFadeSize + NoOxygenToDeathUnitTime / (1 - deathFadeSize);
+				Fade.SetFade(fadeAmount);
+			}
 		}
-		else
+		if(oxygenDepleteTimer.IsPlaying())
 		{
-			fadeAmount = deathFadeSize + NoOxygenToDeathUnitTime / (1- deathFadeSize);
+			OxygenUnitTimeLeft = oxygenDepleteTimer.UnitTimeLeft;
+			OxygenBar.value = OxygenUnitTimeLeft;
 		}
-
-		Fade.SetFade(fadeAmount);
     }
 }

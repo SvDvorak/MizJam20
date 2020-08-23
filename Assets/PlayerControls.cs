@@ -43,7 +43,7 @@ public class PlayerControls : MonoBehaviour
 	void FixedUpdate()
 	{
 		if (GameState.InCutscene)
-			return;
+			moveInput = Vector2.zero;
 
 		var distanceFromJumpStart = rb.position.y - startY;
 		var moveActual = Vector2.zero;
@@ -87,6 +87,9 @@ public class PlayerControls : MonoBehaviour
 
 	public void Move(InputAction.CallbackContext context)
     {
+		if (GameState.InCutscene)
+			return;
+
 		var value = context.ReadValue<Vector2>();
 		moveInput = new Vector2(value.x, value.y);
 
