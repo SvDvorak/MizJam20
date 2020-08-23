@@ -77,5 +77,5 @@ Material:
     m_Colors:
     - _Color: {r: 0.27450982, g: 0.27450982, b: 0.27450982, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _FocusOffset: {r: 123.31287, g: 0, b: 10, a: 0}
+    - _FocusOffset: {r: 127.99921, g: 0, b: 10, a: 0}
     - _FocusPosition: {r: 0, g: 0, b: 0, a: 0}

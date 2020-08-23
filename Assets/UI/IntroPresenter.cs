@@ -36,7 +36,8 @@ public class IntroPresenter : MonoBehaviour
 	{
 		DOTween.Sequence()
 			.AppendInterval(0.5f)
-			.Append(IntroText.GetComponent<TMP_Text>().DOColor(Color.clear, 0.5f));
+			.Append(IntroText.GetComponent<TMP_Text>().DOColor(Color.clear, 0.5f))
+			.AppendCallback(GameState.StartGame);
 	}
 
     public void Skip(InputAction.CallbackContext context)
