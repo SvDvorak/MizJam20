@@ -17,7 +17,6 @@ public class PlayerOxygen : MonoBehaviour
 	private float oxygenDeplete;
 	private float deathFadeSize = 0.1f;
 	private float fadeAmount;
-	private Sequence finalFade;
 
 	void Start()
     {
@@ -27,7 +26,7 @@ public class PlayerOxygen : MonoBehaviour
 
     void Update()
     {
-	    if (!GameState.Ingame)
+	    if (GameState.InCutscene || GameState.GameOver)
 		    return;
 
         DeathUnitTimeLeft = Mathf.Clamp01((death - Time.time) / TimeUntilDeath);
@@ -36,20 +35,14 @@ public class PlayerOxygen : MonoBehaviour
 
         OxygenBar.value = OxygenUnitTimeLeft;
 
-        if (finalFade == null)
-        {
-			if(NoOxygenToDeathUnitTime < 0.01)
-			{
-				finalFade = DOTween.Sequence()
-					.AppendInterval(2)
-					.Append(DOTween.To(() => fadeAmount, x => fadeAmount = x, 0, 0.5f))
-					.AppendCallback(() => GameState.GameOver = true);
-			}
-			else
-			{
-				fadeAmount = deathFadeSize + NoOxygenToDeathUnitTime / (1- deathFadeSize);
-			}
-        }
+		if(NoOxygenToDeathUnitTime < 0.01)
+		{
+			GameState.GameOver = true;
+		}
+		else
+		{
+			fadeAmount = deathFadeSize + NoOxygenToDeathUnitTime / (1- deathFadeSize);
+		}
 
 		Fade.SetFade(fadeAmount);
     }

@@ -42,7 +42,7 @@ public class PlayerControls : MonoBehaviour
 
 	void FixedUpdate()
 	{
-		if (!GameState.Ingame)
+		if (GameState.InCutscene)
 			return;
 
 		var distanceFromJumpStart = rb.position.y - startY;

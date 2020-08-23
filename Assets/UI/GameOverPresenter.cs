@@ -1,4 +1,5 @@
 ﻿using Assets;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -6,6 +7,7 @@ using UnityEngine.SceneManagement;
 public class GameOverPresenter : MonoBehaviour
 {
 	public TextLinePresenter GameOverText;
+	public CircleFade Fade;
 	private bool showingGameOverText;
 
 	void Update()
@@ -14,7 +16,7 @@ public class GameOverPresenter : MonoBehaviour
 	    {
 		    showingGameOverText = true;
 
-			GameOverText.StartTask();
+			Fade.FadeOut(2).OnComplete(() => GameOverText.StartTask());
 	    }
     }
 

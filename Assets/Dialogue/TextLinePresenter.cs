@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Linq;
 using System.Text;
 using TMPro;
@@ -8,19 +7,6 @@ using Random = UnityEngine.Random;
 
 namespace Assets
 {
-	public abstract class TimedTask : MonoBehaviour
-	{
-		public abstract void StartTask();
-		public abstract void FinishNow();
-
-		public event Action OnFinish;
-
-		protected void Finish()
-		{
-			OnFinish?.Invoke();
-		}
-	}
-
 	public enum PrintPerWait
 	{
 		Letter,
@@ -72,6 +58,9 @@ namespace Assets
 
 		public override void FinishNow()
 		{
+			if (_task == null)
+				return;
+
 			StopCoroutine(_task);
 			_textLine.maxVisibleCharacters = int.MaxValue;
 			Finish();

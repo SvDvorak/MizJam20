@@ -10,8 +10,7 @@ public class CircleFade : MonoBehaviour
 {
 	private Material material;
 	private Camera gameCamera;
-	private float fadeInAmount;
-	private bool isFadingIn;
+	private float fadeAmount;
 
 	public void Start()
 	{
@@ -22,19 +21,17 @@ public class CircleFade : MonoBehaviour
 
 	public void SetFade(float amount)
 	{
-		if(!isFadingIn)
-			material.SetFloat("_CircleSize", amount);
+		fadeAmount = amount;
 	}
 
 	public void Update()
 	{
-		if(isFadingIn)
-			material.SetFloat("_CircleSize", fadeInAmount);
+		material.SetFloat("_CircleSize", fadeAmount);
 
 		var playerPos = PlayerControls.Player.transform.position;
 
 		var offset = Vector3.zero;
-		if(!isFadingIn)
+		if(GameState.Playing || GameState.GameOver)
 			offset = gameCamera.WorldToScreenPoint(playerPos) - gameCamera.WorldToScreenPoint(gameCamera.transform.position);
 
 		material.SetVector("_FocusOffset", offset);
@@ -42,10 +39,8 @@ public class CircleFade : MonoBehaviour
 
 	private void FadeIn()
 	{
-		isFadingIn = true;
-		DOTween
-			.To(() => fadeInAmount, x => fadeInAmount = x, 1, 1f)
-			.OnComplete(() => isFadingIn = false);
+		GameState.AddRunningCutscene(DOTween
+			.To(() => fadeAmount, x => fadeAmount = x, 1, 1f));
 	}
 
 	public void OnEnable()
@@ -56,6 +51,13 @@ public class CircleFade : MonoBehaviour
 	public void OnDisable()
 	{
 		material.SetFloat("_CircleSize", 1);
-		GameState.GameStarted += FadeIn;
+		GameState.GameStarted -= FadeIn;
+	}
+
+	public Sequence FadeOut(float waitFirst)
+	{
+		return GameState.AddRunningCutscene(DOTween.Sequence()
+			.AppendInterval(waitFirst)
+			.Append(DOTween.To(() => fadeAmount, x => fadeAmount = x, 0, 0.5f)));
 	}
 }
