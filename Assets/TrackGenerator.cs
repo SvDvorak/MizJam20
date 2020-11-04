@@ -8,43 +8,38 @@ public class TrackNode
 	public List<TrackNode> Connections;
 	public Vector2Int Position;
 
-	public Vector2Int? BranchDirection
-	{
-		get
-		{
-			if (Connections.Count == 0)
-				return null;
-			return (Connections[0].Position - Position).Normalized();
-		}
-	}
+	//public Vector2Int? BranchDirection
+	//{
+	//	get
+	//	{
+	//		if (Connections.Count == 0)
+	//			return null;
+	//		return (Connections[0].Position - Position).Normalized();
+	//	}
+	//}
 }
 
 public class Step
 {
 	public Vector2Int Position;
-	public Vector2Int Direction;
+	public Vector2Int PreviousDirection;
+	public Vector2Int NextDirection;
 	public bool ChangedDirection;
 
-	public Step()
+	public Step(Vector2Int current, Vector2Int previous, Vector2Int next)
 	{
-		Position = new Vector2Int(0, 0);
-		Direction = new Vector2Int(-1, 0);
-		ChangedDirection = false;
+		Position = current;
+		PreviousDirection = current - previous;
+		NextDirection = next - current;
+		ChangedDirection = NextDirection != PreviousDirection && !IsZero(NextDirection) && !IsZero(PreviousDirection);
 	}
 
-	public Step(TrackNode startNode, Step lastStep)
-	{
-		Position = startNode.Position;
-		Direction = (Position - lastStep.Position).Normalized();
-		ChangedDirection = lastStep.Direction != Direction;
-	}
+	private bool IsZero(Vector2Int v) => v == Vector2Int.zero;
+}
 
-	public Step(Vector2Int position, Vector2Int direction, Vector2Int lastDirection)
-	{
-		Position = position;
-		Direction = direction;
-		ChangedDirection = lastDirection != Direction;
-	}
+public class StepChain : List<Vector2Int>
+{
+	public List<StepChain> ChildChains = new List<StepChain>();
 }
 
 public class TrackGenerator : MonoBehaviour
@@ -55,6 +50,14 @@ public class TrackGenerator : MonoBehaviour
 	public Sprite Straight;
 	public Sprite Turn;
 
+	private readonly Dictionary<Vector2Int, float> _turnRotations = new Dictionary<Vector2Int, float>()
+	{
+		{new Vector2Int(1, -1), 0},
+		{new Vector2Int(1, 1), 90},
+		{new Vector2Int(-1, 1), 180},
+		{new Vector2Int(-1, -1), 270},
+	};
+
     [ContextMenu("Regenerate")]
     public void Regenerate()
     {
@@ -62,21 +65,23 @@ public class TrackGenerator : MonoBehaviour
 			DestroyImmediate(child.gameObject);
 
 	    var tree = GetTrackNodes(transform);
+	    var steps = GetStepChains(null, tree.Connections);
 
-	    GenerateTracks(null, null, tree.Connections);
-    }
+		GenerateTracks(steps, false);
+	}
 
     private TrackNode GetTrackNodes(Transform t)
     {
 	    return new TrackNode
 	    {
 		    Connections = t.GetChildren().Select(GetTrackNodes).ToList(),
-			Position = t.position.ToV2Int()
+		    Position = t.position.ToV2Int()
 	    };
     }
 
-    private void GenerateTracks(Step lastStep, TrackNode startNode, List<TrackNode> connections)
+    private StepChain GetStepChains(TrackNode startNode, List<TrackNode> connections)
     {
+	    var steps = new StepChain();
 	    var i = 0;
 	    if (startNode == null)
 	    {
@@ -84,33 +89,24 @@ public class TrackGenerator : MonoBehaviour
 		    i += 1;
 	    }
 
-		if(lastStep == null)
-		{
-			lastStep = new Step();
-		}
-
-		//CreateTrackPiece(new Step(startNode, lastStep));
+		steps.Add(startNode.Position);
 
 		for (; i < connections.Count; i++)
 	    {
 		    var endNode = connections[i];
 
-		    var steps = GetSteps(lastStep.Direction, startNode, endNode).ToList();
-		    foreach (var step in steps)
-		    {
-			    CreateTrackPiece(step);
-		    }
+		    steps.AddRange(GetSteps(startNode, endNode));
 
-			//if(endNode.Connections.Count > 0)
-				GenerateTracks(steps.Last(), endNode, endNode.Connections);
-			//else
-			//	CreateTrackPiece(new Step(endNode, steps.Last()));
+			if(endNode.Connections.Count > 0)
+				steps.ChildChains.Add(GetStepChains(endNode, endNode.Connections));
 
 			startNode = endNode;
 	    }
+
+		return steps;
     }
 
-    private IEnumerable<Step> GetSteps(Vector2Int lastStep, TrackNode startNode, TrackNode endNode)
+    private IEnumerable<Vector2Int> GetSteps(TrackNode startNode, TrackNode endNode)
     {
 	    var currentPosition = startNode.Position;
 	    var endPosition = endNode.Position;
@@ -124,9 +120,28 @@ public class TrackGenerator : MonoBehaviour
 			    break;
 
 		    currentPosition += step;
-		    yield return new Step(currentPosition, step, lastStep);
-			lastStep = step;
-		}
+		    yield return currentPosition;
+	    }
+    }
+
+    private void GenerateTracks(StepChain stepChain, bool skipFirst = true)
+    {
+	    for (var i = skipFirst ? 1 : 0; i < stepChain.Count; i++)
+	    {
+		    var current = stepChain[i];
+		    var previous = current;
+		    var next = current;
+		    if (i != 0)
+			    previous = stepChain[i - 1];
+			if(i != stepChain.Count - 1)
+				next = stepChain[i + 1];
+		    CreateTrackPiece(new Step(current, previous, next));
+	    }
+
+	    foreach (var childChain in stepChain.ChildChains)
+	    {
+			GenerateTracks(childChain);
+	    }
     }
 
     private void CreateTrackPiece(Step step)
@@ -140,7 +155,7 @@ public class TrackGenerator : MonoBehaviour
     {
 	    var spriteRenderer = track.GetComponent<SpriteRenderer>();
 	    spriteRenderer.sprite = !step.ChangedDirection ? Straight : Turn;
-	    var rotation = Math.Sign(step.Direction.x) * 90;
+	    var rotation = step.ChangedDirection ? _turnRotations[step.NextDirection - step.PreviousDirection] : Math.Sign(step.NextDirection.x) * 90;
 		track.transform.rotation = Quaternion.Euler(0, 0, rotation);
     }
 }
