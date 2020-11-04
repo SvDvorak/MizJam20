@@ -25,13 +25,15 @@ public class Step
 	public Vector2Int PreviousDirection;
 	public Vector2Int NextDirection;
 	public bool ChangedDirection;
+	public IEnumerable<Vector2Int> ConnectedDirections;
 
-	public Step(Vector2Int current, Vector2Int previous, Vector2Int next)
+	public Step(Vector2Int current, Vector2Int previous, Vector2Int next, IEnumerable<Vector2Int> connected)
 	{
 		Position = current;
 		PreviousDirection = current - previous;
 		NextDirection = next - current;
 		ChangedDirection = NextDirection != PreviousDirection && !IsZero(NextDirection) && !IsZero(PreviousDirection);
+		ConnectedDirections = connected.Select(x => x - Position);
 	}
 
 	private bool IsZero(Vector2Int v) => v == Vector2Int.zero;
@@ -49,6 +51,7 @@ public class TrackGenerator : MonoBehaviour
 
 	public Sprite Straight;
 	public Sprite Turn;
+	public Sprite Junction;
 
 	private readonly Dictionary<Vector2Int, float> _turnRotations = new Dictionary<Vector2Int, float>()
 	{
@@ -135,7 +138,8 @@ public class TrackGenerator : MonoBehaviour
 			    previous = stepChain[i - 1];
 			if(i != stepChain.Count - 1)
 				next = stepChain[i + 1];
-		    CreateTrackPiece(new Step(current, previous, next));
+			var connected = stepChain.ChildChains.Select(x => x[0]).Where(x => x == current);
+		    CreateTrackPiece(new Step(current, previous, next, connected));
 	    }
 
 	    foreach (var childChain in stepChain.ChildChains)
@@ -154,8 +158,24 @@ public class TrackGenerator : MonoBehaviour
     private void SetTrackSprite(GameObject track, Step step)
     {
 	    var spriteRenderer = track.GetComponent<SpriteRenderer>();
-	    spriteRenderer.sprite = !step.ChangedDirection ? Straight : Turn;
-	    var rotation = step.ChangedDirection ? _turnRotations[step.NextDirection - step.PreviousDirection] : Math.Sign(step.NextDirection.x) * 90;
+	    spriteRenderer.sprite = GetSprite(step);
+	    var rotation = GetRotation(step);
 		track.transform.rotation = Quaternion.Euler(0, 0, rotation);
+    }
+
+    private Sprite GetSprite(Step step)
+    {
+	    if (step.ConnectedDirections.Any())
+		    return Junction;
+	    if (step.ChangedDirection)
+		    return Turn;
+	    return Straight;
+    }
+
+    private float GetRotation(Step step)
+    {
+	    return step.ChangedDirection ?
+		    _turnRotations[step.NextDirection - step.PreviousDirection] :
+		    Math.Sign(step.PreviousDirection.x) * 90;
     }
 }
